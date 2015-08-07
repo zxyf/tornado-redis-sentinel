@@ -16,8 +16,10 @@ class SentinelClient(Client):
     def __init__(self, io_loop=None, disconnect_callback=None):
         super(SentinelClient, self).__init__(io_loop=io_loop)
         self._disconnect_callback = disconnect_callback
+        self._connection_status = 'DISCONNECTED'
 
     def on_disconnect(self):
+        self._connection_status = 'DISCONNECTED'
         if self._disconnect_callback is not None:
             self._disconnect_callback()
 
@@ -118,7 +120,7 @@ class SentinelClient(Client):
         self._connect(sock, (master_host, int(master_port)), self.handle_connection_success)
 
     def handle_connection_success(self, *args, **kw):
+        self.connection_status = "CONNECTED"
         if self._connect_callback:
-            self.connection_status = "CONNECTED"
             self._connect_callback()
         self._connect_callback = None
