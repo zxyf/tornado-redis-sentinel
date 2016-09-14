@@ -41,7 +41,7 @@ Tornado redis library based in toredis that supports sentinel connections.
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
-        'tornado>3.2',
+        'tornado>4.0,<5.0',
         'toredis',
         'six'
     ],
