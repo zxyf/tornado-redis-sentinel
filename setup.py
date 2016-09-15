@@ -37,11 +37,12 @@ Tornado redis library based in toredis that supports sentinel connections.
         'Operating System :: Unix',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 2.7',
+	'Programming Language :: Python :: 3.5'
     ],
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
-        'tornado>4.0,<5.0',
+        'tornado>3.2,<5.0',
         'toredis',
         'six'
     ],
