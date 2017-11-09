@@ -16,8 +16,10 @@ class SentinelClient(Client):
     def __init__(self, io_loop=None, disconnect_callback=None):
         super(SentinelClient, self).__init__(io_loop=io_loop)
         self._disconnect_callback = disconnect_callback
+        self._connection_status = 'DISCONNECTED'
 
     def on_disconnect(self):
+        self._connection_status = 'DISCONNECTED'
         if self._disconnect_callback is not None:
             self._disconnect_callback()
 
@@ -65,7 +67,7 @@ class SentinelClient(Client):
             err = sys.exc_info()[1]
             if err.errno == errno.ECONNREFUSED:
                 logger.warn("Error connecting to %s:%d (%s)... Trying next sentinel." % (host, int(port), err))
-                #self.connect_to_next_sentinel()
+                self.connect_to_next_sentinel()
             else:
                 raise
 
@@ -114,11 +116,18 @@ class SentinelClient(Client):
             return
 
         master_host, master_port = args[0]
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0)
-        self._connect(sock, (master_host, int(master_port)), self.handle_connection_success)
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0)
+            self._connect(sock, (master_host, int(master_port)), self.handle_connection_success)
+        except socket.error as err:
+            if err.errno == errno.ECONNREFUSED:
+                logger.warn("Error connecting to master %s:%d (%s)... Trying again." % (master_host, int(master_port), err))
+                self.update_sentinels()
+            else:
+                raise
 
     def handle_connection_success(self, *args, **kw):
+        self.connection_status = "CONNECTED"
         if self._connect_callback:
-            self.connection_status = "CONNECTED"
             self._connect_callback()
         self._connect_callback = None
